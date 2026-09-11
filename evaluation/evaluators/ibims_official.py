@@ -13,6 +13,7 @@ from scipy.io import loadmat, savemat
 
 from evaluation.core.io import load_prediction
 from evaluation.core.output import RunLayout, write_csv, write_json
+from evaluation.core.protocol import official_script_hashes
 from evaluation.core.types import EvaluationSample
 from evaluation.datasets.base import DatasetCollection
 from evaluation.datasets.ibims import IBIMS_EXPECTED_SHAPE
@@ -137,10 +138,18 @@ def prepare_workspace(
     return eval_script
 
 
-def run_evaluator(eval_script: Path, workspace: Path, log_path: Path) -> str:
+def run_evaluator(eval_script: Path, workspace: Path, log_path: Path, seed: int = 0) -> str:
     environment = os.environ.copy()
     script_dir = str(eval_script.parent)
     environment["PYTHONPATH"] = script_dir + os.pathsep + environment.get("PYTHONPATH", "")
+    environment["PYTHONHASHSEED"] = str(seed)
+    environment.setdefault("MPLBACKEND", "Agg")
+    # Seed the dataset-supplied script without modifying its scoring code.
+    launcher = (
+        "import random, runpy, sys; import numpy as np; "
+        "seed = int(sys.argv[2]); random.seed(seed); np.random.seed(seed); "
+        "sys.argv = [sys.argv[1]]; runpy.run_path(sys.argv[0], run_name='__main__')"
+    )
     project_root = Path(__file__).resolve().parents[2]
     uv = shutil.which("uv") or "uv"
     result = subprocess.run(
@@ -152,7 +161,10 @@ def run_evaluator(eval_script: Path, workspace: Path, log_path: Path) -> str:
             "--extra",
             "evaluation",
             "python",
+            "-c",
+            launcher,
             str(eval_script),
+            str(seed),
         ],
         cwd=workspace,
         env=environment,
@@ -177,6 +189,7 @@ def run_ibims_official_evaluation(
     collection: DatasetCollection,
     layout: RunLayout,
     ibims_root: Path,
+    seed: int = 0,
 ) -> Dict[str, Any]:
     grouped: Dict[str, List[EvaluationSample]] = defaultdict(list)
     for sample in collection.samples:
@@ -187,7 +200,7 @@ def run_ibims_official_evaluation(
         prediction_dir = export_official_predictions(samples, layout, subset)
         workspace = layout.official_workspace(subset)
         eval_script = prepare_workspace(ibims_root, samples, prediction_dir, workspace)
-        stdout = run_evaluator(eval_script, workspace, layout.official_log_path(subset))
+        stdout = run_evaluator(eval_script, workspace, layout.official_log_path(subset), seed)
         metrics = parse_eval_stdout(stdout)
         if not metrics:
             raise ValueError(
@@ -220,4 +233,6 @@ def run_ibims_official_evaluation(
     return {
         "num_evaluated": sum(len(samples) for samples in grouped.values()),
         "summary": all_metrics,
+        "seed": seed,
+        "official_script_sha256": official_script_hashes(ibims_root),
     }

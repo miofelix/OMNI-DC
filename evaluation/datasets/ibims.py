@@ -78,6 +78,7 @@ def load_ibims(
                     expected_shape=IBIMS_EXPECTED_SHAPE,
                     metadata={
                         "difficulty": level,
+                        "intrinsics_source": "ibims_calibration",
                         "intrinsics_path": str(
                             ibims_root / "ibims1_core_raw" / "calib" / f"{sample_id}.txt"
                         ),

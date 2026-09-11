@@ -62,7 +62,13 @@ def add_common_arguments(parser: argparse.ArgumentParser) -> None:
         help="Global 3x3 or fx fy cx cy camera intrinsics file used by native OGNIDC",
     )
     parser.add_argument("--load-dav2", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--seed", type=int, default=0, help="OMNI-DC inference random seed")
+    parser.add_argument(
+        "--evaluation-seed",
+        type=int,
+        default=0,
+        help="Random seed for the official iBims evaluator, independent of model inference",
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -206,6 +212,7 @@ def build_config(args: argparse.Namespace, run_dir: Path) -> RunConfig:
         pointcloud_knn_k=getattr(args, "pointcloud_knn_k", 16),
         pointcloud_knn_std_ratio=getattr(args, "pointcloud_knn_std_ratio", 2.0),
         disable_pointcloud_knn_filter=getattr(args, "disable_pointcloud_knn_filter", False),
+        evaluation_seed=args.evaluation_seed,
         load_dav2=args.load_dav2,
         seed=args.seed,
     )

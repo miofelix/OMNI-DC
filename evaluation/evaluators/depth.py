@@ -82,17 +82,31 @@ def run_depth_evaluation(collection: DatasetCollection, layout: RunLayout) -> Di
                 & (target > 0.0)
             )
         valid_pixels = int(np.count_nonzero(valid_mask))
+        gt_valid_pixels = int(np.count_nonzero(np.isfinite(target) & (target > 0.0)))
         records.append(
             {
                 "subset": sample.subset,
                 "sample_id": sample.sample_id,
                 "valid_pixels": valid_pixels,
+                "gt_valid_pixels": gt_valid_pixels,
+                "prediction_coverage": valid_pixels / gt_valid_pixels if gt_valid_pixels else None,
                 **metrics,
             }
         )
 
     summary = summarize_records(records)
-    per_sample_fields = ["subset", "sample_id", "valid_pixels", *METRIC_NAMES]
+    total_gt = sum(record["gt_valid_pixels"] for record in records)
+    total_valid = sum(record["valid_pixels"] for record in records)
+    coverage = {
+        "valid_pixels": total_valid,
+        "gt_valid_pixels": total_gt,
+        "prediction_coverage": total_valid / total_gt if total_gt else None,
+    }
+    summary["coverage"] = coverage
+    per_sample_fields = [
+        "subset", "sample_id", "valid_pixels", "gt_valid_pixels", "prediction_coverage",
+        *METRIC_NAMES,
+    ]
     write_csv(layout.metrics_dir / "per_sample.csv", records, per_sample_fields)
 
     summary_rows = []
@@ -107,5 +121,6 @@ def run_depth_evaluation(collection: DatasetCollection, layout: RunLayout) -> Di
     write_json(layout.metrics_dir / "summary.json", summary)
     return {
         "num_evaluated": len(records),
+        "coverage": coverage,
         "summary": summary,
     }

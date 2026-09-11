@@ -48,6 +48,7 @@ class RunConfig:
     disable_pointcloud_knn_filter: bool = False
     load_dav2: bool = True
     seed: int = 0
+    evaluation_seed: int = 0
 
 
 @dataclass(frozen=True)

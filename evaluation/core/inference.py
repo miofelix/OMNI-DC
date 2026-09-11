@@ -12,10 +12,10 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 
 from evaluation.core.io import (
-    normalize_prediction,
     read_gt_depth,
     read_raw_depth,
     read_rgb,
+    squeeze_depth,
 )
 from evaluation.core.output import RunLayout, save_prediction
 from evaluation.core.types import EvaluationSample, LoadedSample, RunConfig
@@ -209,19 +209,41 @@ def _load_intrinsics(path: Path) -> np.ndarray:
 
 
 def _intrinsics_for_sample(sample: EvaluationSample, config: RunConfig) -> np.ndarray:
-    value = sample.metadata.get("intrinsics_path") or config.intrinsics_path
-    if value is None:
-        if config.save_visualizations:
-            raise FileNotFoundError(
-                f"Intrinsics are required for visualization and model inference: {sample.sample_id}"
-            )
-        return np.eye(3, dtype=np.float32)
-    path = Path(value).expanduser().resolve()
-    if not path.is_file():
-        if config.save_visualizations:
+    """Prefer available sample calibration, then explicit K, then native identity.
+
+    Native src/data/ibims.py uses an identity matrix, and BasicUpdateBlock
+    currently accepts K without reading it. Automatically derived calibration
+    paths are optional; an explicitly requested file must exist.
+    """
+    value = sample.metadata.get("intrinsics_path")
+    if value is not None:
+        path = Path(value).expanduser().resolve()
+        if path.is_file():
+            return _load_intrinsics(path)
+    if config.intrinsics_path is not None:
+        path = config.intrinsics_path.expanduser().resolve()
+        if not path.is_file():
             raise FileNotFoundError(f"Intrinsics file not found: {path}")
-        return np.eye(3, dtype=np.float32)
-    return _load_intrinsics(path)
+        return _load_intrinsics(path)
+    if value is not None and sample.metadata.get("intrinsics_source") != "ibims_calibration":
+        raise FileNotFoundError(f"Intrinsics file not found: {Path(value).expanduser().resolve()}")
+    return np.eye(3, dtype=np.float32)
+
+
+def restore_native_prediction(prediction: np.ndarray, target_shape: tuple[int, int]) -> np.ndarray:
+    """Preserve OGNIDC values after native padding has been removed.
+
+    src/main.py forwards the cropped output directly to DCMetric. In particular,
+    zero predictions remain errors on valid GT; they must not become NaNs here.
+    Dataset-specific scoring masks are applied by the shared evaluator.
+    """
+    restored = squeeze_depth(prediction).astype(np.float32, copy=False)
+    if restored.shape != target_shape:
+        raise ValueError(
+            f"Native OGNIDC prediction shape mismatch: got {restored.shape}, "
+            f"expected {target_shape}"
+        )
+    return restored
 
 
 def _rgb_tensor(rgb: np.ndarray, device: torch.device) -> torch.Tensor:
@@ -290,6 +312,14 @@ def run_inference(
             "dataset, metric, and output validation."
         )
     model = load_model(config.model_path, device, config)
+    if collection.name == "kitti" and config.save_visualizations:
+        for sample in collection.samples:
+            intrinsics_path = sample.metadata.get("intrinsics_path") or config.intrinsics_path
+            if not intrinsics_path:
+                raise ValueError(
+                    "KITTI visualization requires an intrinsics path in every manifest row "
+                    "or --intrinsics-path"
+                )
     dataset = InferenceInputDataset(collection.samples, load_gt=config.save_visualizations)
     loader = DataLoader(
         dataset,
@@ -315,14 +345,8 @@ def run_inference(
                     f"Unexpected input shape for {sample.sample_id}: "
                     f"got {item.raw_depth.shape}, expected {sample.expected_shape}"
                 )
-            if collection.name == "ibims":
-                ibims_intrinsics = sample.metadata.get("intrinsics_path") or config.intrinsics_path
-                if ibims_intrinsics is None or not Path(ibims_intrinsics).expanduser().is_file():
-                    raise FileNotFoundError(
-                        f"Missing iBims intrinsics file for {sample.sample_id}: {ibims_intrinsics}"
-                    )
             intrinsics = _intrinsics_for_sample(sample, config)
-            prediction = normalize_prediction(
+            prediction = restore_native_prediction(
                 _infer_one(model, item.rgb, item.raw_depth, intrinsics, device, use_fp16),
                 item.raw_depth.shape,
             )
@@ -343,15 +367,19 @@ def run_inference(
                     config.visualization_max_depth,
                 )
                 if collection.name == "kitti":
-                    intrinsics_path = Path(
-                        sample.metadata.get("intrinsics_path") or config.intrinsics_path
-                    )
                     save_kitti_prediction_visualization(
                         layout.kitti_prediction_visualization_path(sample),
                         prediction,
                         config.visualization_min_depth,
                         config.visualization_max_depth,
                     )
+                    intrinsics_value = sample.metadata.get("intrinsics_path")
+                    intrinsics_path = (
+                        Path(intrinsics_value)
+                        if intrinsics_value
+                        else config.intrinsics_path
+                    )
+                    assert intrinsics_path is not None
                     save_kitti_pointcloud_visualization(
                         layout.kitti_pointcloud_visualization_path(sample),
                         item.rgb,
@@ -373,6 +401,10 @@ def run_inference(
         "input_preprocessing": (
             "RGB ImageNet normalization; sparse depth meters; native OGNIDC padding"
         ),
+        "prediction_postprocessing": (
+            "native padding removed; float32 metric depth; original values preserved"
+        ),
+        "intrinsics_policy": "available per-sample calibration; explicit global K; native identity",
         "depth_output": "metric_depth_meter",
         "seed": config.seed,
     }
