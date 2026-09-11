@@ -13,7 +13,7 @@ train_depth_noise=0.0~0.05
 train_depth_pattern="0.5*100~2000+0.25*sift+0.25*velodyne"
 mixed_dataset_total_length=125000
 
-python main.py \
+uv run python main.py \
     --train_data_name Hypersim+IRS+VKITTI+TartanAir+BlendedMVS --mixed_dataset_total_length $mixed_dataset_total_length \
     --train_depth_pattern $train_depth_pattern --train_depth_noise $train_depth_noise \
     --random_rot_deg 0.0 \

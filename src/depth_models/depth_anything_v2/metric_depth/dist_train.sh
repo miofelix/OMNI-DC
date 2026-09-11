@@ -15,7 +15,7 @@ save_path=exp/hypersim # exp/vkitti
 
 mkdir -p $save_path
 
-python3 -m torch.distributed.launch \
+uv run python -m torch.distributed.launch \
     --nproc_per_node=$gpus \
     --nnodes 1 \
     --node_rank=0 \

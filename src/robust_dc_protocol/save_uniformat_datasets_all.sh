@@ -1,7 +1,7 @@
 # void
 for sample in 1500 500 150
 do
- python robust_dc_protocol/save_uniformat_datasets.py \
+ uv run python robust_dc_protocol/save_uniformat_datasets.py \
    --val_data_name VOID \
    --dir_data ../datasets/void_release/void_${sample} \
    --val_depth_pattern $sample \
@@ -12,7 +12,7 @@ done
 # nyu
 for sample in 500 200 100 50 5
 do
- python robust_dc_protocol/save_uniformat_datasets.py \
+ uv run python robust_dc_protocol/save_uniformat_datasets.py \
    --val_data_name NYU \
    --dir_data ../datasets/nyudepthv2_h5 \
    --split_json ../data_json/nyu.json \
@@ -27,7 +27,7 @@ for split in val test
 do
  for lidar_line in 64 32 16 8
  do
-    python robust_dc_protocol/save_uniformat_datasets.py \
+    uv run python robust_dc_protocol/save_uniformat_datasets.py \
     --val_data_name $data_name \
     --benchmark_gen_split $split \
     --benchmark_save_name "${data_name}_${split}_LiDAR_${lidar_line}" \
@@ -42,7 +42,7 @@ for data_name in ETH3D_SfM_Indoor ETH3D_SfM_Outdoor
 do
   for split in val test
   do
-     python robust_dc_protocol/save_uniformat_datasets.py \
+     uv run python robust_dc_protocol/save_uniformat_datasets.py \
      --val_data_name $data_name \
      --benchmark_gen_split $split \
      --benchmark_save_name "${data_name}_${split}"
@@ -57,7 +57,7 @@ do
   # part 1: random density
   for sample_pattern in 2150 300 100
   do
-     python robust_dc_protocol/save_uniformat_datasets.py \
+     uv run python robust_dc_protocol/save_uniformat_datasets.py \
      --val_data_name $data_name \
      --val_depth_pattern $sample_pattern \
      --benchmark_gen_split test \
@@ -68,7 +68,7 @@ do
   # part 2: random noise
   for noise in 0.01 0.05 0.1
   do
-     python robust_dc_protocol/save_uniformat_datasets.py \
+     uv run python robust_dc_protocol/save_uniformat_datasets.py \
      --val_data_name $data_name \
      --val_depth_pattern 2150 \
      --benchmark_gen_split test \
@@ -79,7 +79,7 @@ do
   # part 3: sift/orb/lidar
   for pattern in sift orb LiDAR_64 LiDAR_32 LiDAR_16 LiDAR_8
   do
-     python robust_dc_protocol/save_uniformat_datasets.py \
+     uv run python robust_dc_protocol/save_uniformat_datasets.py \
      --val_data_name $data_name \
      --val_depth_pattern $pattern \
      --benchmark_gen_split test \

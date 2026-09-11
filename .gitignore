@@ -21,8 +21,8 @@ venv/
 *.png
 
 # Project data, checkpoints, and experiment outputs
-data/
-datasets/
+/data/
+/datasets/
 checkpoints/
 ckpts/
 experiments/
@@ -32,8 +32,7 @@ src/depth_models/depth_anything_v2/checkpoints/
 src_bkup/
 
 # Local evaluation outputs
-evaluation/output/
-evaluation_ibims/output/
+outputs/
 
 # External local reference symlinks
 eval_pipeline

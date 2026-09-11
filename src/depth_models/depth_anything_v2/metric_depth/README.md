@@ -24,7 +24,7 @@ We provide **six metric depth models** of three scales for indoor and outdoor sc
 ```bash
 git clone https://github.com/DepthAnything/Depth-Anything-V2
 cd Depth-Anything-V2/metric_depth
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 
 Download the checkpoints listed [here](#pre-trained-models) and put them under the `checkpoints` directory.
@@ -60,14 +60,14 @@ Here, we take the `vitl` encoder as an example. You can also use `vitb` or `vits
 
 ```bash
 # indoor scenes
-python run.py \
+uv run python run.py \
   --encoder vitl \
   --load-from checkpoints/depth_anything_v2_metric_hypersim_vitl.pth \
   --max-depth 20 \
   --img-path <path> --outdir <outdir> [--input-size <size>] [--save-numpy]
 
 # outdoor scenes
-python run.py \
+uv run python run.py \
   --encoder vitl \
   --load-from checkpoints/depth_anything_v2_metric_vkitti_vitl.pth \
   --max-depth 80 \
@@ -77,7 +77,7 @@ python run.py \
 ### Project 2D images to point clouds:
 
 ```bash
-python depth_to_pointcloud.py \
+uv run python depth_to_pointcloud.py \
   --encoder vitl \
   --load-from checkpoints/depth_anything_v2_metric_hypersim_vitl.pth \
   --max-depth 20 \

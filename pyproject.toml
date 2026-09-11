@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omni-dc"
+version = "1.1.0"
+description = "OMNI-DC depth completion and benchmark evaluation"
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "click>=8.1",
+    "einops>=0.7",
+    "huggingface-hub>=0.24",
+    "matplotlib>=3.8",
+    "numpy>=1.26,<3",
+    "opencv-python>=4.8,<5",
+    "pillow>=10",
+    "scipy>=1.11",
+    "timm>=0.9,<1.1",
+    "torch==2.6.0",
+    "torchvision==0.21.0",
+    "trimesh>=4.0",
+]
+
+[project.optional-dependencies]
+evaluation = [
+    "scikit-image>=0.22",
+    "scikit-learn>=1.4",
+    "tqdm>=4.66",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.12",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["evaluation*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

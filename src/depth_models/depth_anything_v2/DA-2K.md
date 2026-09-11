@@ -31,7 +31,7 @@ All annotations are stored in `annotations.json`. The annotation file is a JSON 
 
 To visualize the annotations:
 ```bash
-python visualize.py [--scene-type <type>]
+uv run python visualize.py [--scene-type <type>]
 ```
 
 **Options**

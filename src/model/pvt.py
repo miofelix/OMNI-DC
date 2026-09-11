@@ -4,9 +4,21 @@ import torch.nn.functional as F
 from functools import partial
 import torchvision
 
-from timm.models.layers import DropPath, to_2tuple, trunc_normal_
-from mmseg.utils import get_root_logger
-from mmcv.runner import load_checkpoint
+try:
+    from timm.models.layers import DropPath, to_2tuple, trunc_normal_
+except ImportError:  # timm >= 1.0
+    from timm.layers import DropPath, to_2tuple, trunc_normal_
+
+try:
+    from mmseg.utils import get_root_logger
+    from mmcv.runner import load_checkpoint
+except ImportError:  # The evaluation adapter only needs the equivalent state-dict load.
+    import logging
+
+    def get_root_logger():
+        return logging.getLogger("omni_dc")
+
+    load_checkpoint = None
 from resnet_cbam import BasicBlock
 from pathlib import Path
 
@@ -263,11 +275,15 @@ class PyramidVisionTransformer(nn.Module):
             pretrained = str(pretrained)
             logger = get_root_logger()
             logger.setLevel('ERROR')
-            try:
-                load_checkpoint(self, pretrained, map_location='cpu', strict=False, logger=logger)
-            except RuntimeError as error:
-                if 'weights_only' not in str(error):
-                    raise
+            if load_checkpoint is not None:
+                try:
+                    load_checkpoint(self, pretrained, map_location='cpu', strict=False, logger=logger)
+                except RuntimeError as error:
+                    if 'weights_only' not in str(error):
+                        raise
+                    checkpoint = torch_load_compatible(pretrained, map_location='cpu')
+                    self.load_state_dict(checkpoint_state_dict(checkpoint), strict=False)
+            else:
                 checkpoint = torch_load_compatible(pretrained, map_location='cpu')
                 self.load_state_dict(checkpoint_state_dict(checkpoint), strict=False)
             print("===pretrained weight loaded===")

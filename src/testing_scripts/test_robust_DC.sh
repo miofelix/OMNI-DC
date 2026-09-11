@@ -21,7 +21,7 @@ mkdir $log_dir
 # part1: real depth patterns
 for data_name in ETH3D_SfM_Indoor_test ETH3D_SfM_Outdoor_test KITTIDC_test_LiDAR_64 KITTIDC_test_LiDAR_32 KITTIDC_test_LiDAR_16 KITTIDC_test_LiDAR_8
 do
- python main.py \
+ uv run python main.py \
    --dir_data ../datasets/uniformat_release/"${data_name}" --val_data_name Uniformat \
    --max_depth $max_depth --data_normalize_median 1 \
    --num_resolution $resolution --multi_resolution_learnable_gradients_weights $multi_resolution_learnable_gradients_weights \
@@ -39,7 +39,7 @@ for sample in 2150 300 100 noise0.05 noise0.1 orb sift LiDAR_64 LiDAR_16 LiDAR_8
 do
   for data_name in ARKitScenes iBims ETH3D_Indoor ETH3D_Outdoor DIODE_Indoor DIODE_Outdoor
   do
-    python main.py \
+    uv run python main.py \
       --dir_data ../datasets/uniformat_release/"${data_name}_test_${sample}" --val_data_name Uniformat \
       --max_depth $max_depth --data_normalize_median 1 \
       --num_resolution $resolution --multi_resolution_learnable_gradients_weights $multi_resolution_learnable_gradients_weights \

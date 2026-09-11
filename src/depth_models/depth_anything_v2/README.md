@@ -48,7 +48,7 @@ We provide **four models** of varying scales for robust relative depth estimatio
 ```bash
 git clone https://github.com/DepthAnything/Depth-Anything-V2
 cd Depth-Anything-V2
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 
 Download the checkpoints listed [here](#pre-trained-models) and put them under the `checkpoints` directory.
@@ -95,7 +95,7 @@ depth = pipe(image)["depth"]
 ### Running script on *images*
 
 ```bash
-python run.py \
+uv run python run.py \
   --encoder <vits | vitb | vitl | vitg> \
   --img-path <path> --outdir <outdir> \
   [--input-size <size>] [--pred-only] [--grayscale]
@@ -108,13 +108,13 @@ Options:
 
 For example:
 ```bash
-python run.py --encoder vitl --img-path assets/examples --outdir depth_vis
+uv run python run.py --encoder vitl --img-path assets/examples --outdir depth_vis
 ```
 
 ### Running script on *videos*
 
 ```bash
-python run_video.py \
+uv run python run_video.py \
   --encoder <vits | vitb | vitl | vitg> \
   --video-path assets/examples_video --outdir video_depth_vis \
   [--input-size <size>] [--pred-only] [--grayscale]
@@ -127,7 +127,7 @@ python run_video.py \
 To use our gradio demo locally:
 
 ```bash
-python app.py
+uv run python app.py
 ```
 
 You can also try our [online demo](https://huggingface.co/spaces/Depth-Anything/Depth-Anything-V2).

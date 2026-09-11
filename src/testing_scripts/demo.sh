@@ -12,7 +12,7 @@ backbone='rgbd'
 # checkpoints
 ckpt=../checkpoints/modelv1.1_best_72epochs.pt
 
-python demo.py \
+uv run python demo.py \
    --max_depth $max_depth --data_normalize_median 1 \
    --num_resolution $resolution --multi_resolution_learnable_gradients_weights $multi_resolution_learnable_gradients_weights \
    --load_dav2 $load_dav2 \

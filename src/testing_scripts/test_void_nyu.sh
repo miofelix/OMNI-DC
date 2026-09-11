@@ -21,7 +21,7 @@ mkdir $log_dir
 # void
 for data_name in VOID_sample1500 VOID_sample500 VOID_sample150
 do
-  python main.py \
+  uv run python main.py \
     --dir_data ../datasets/uniformat_release/"${data_name}" --val_data_name Uniformat \
     --max_depth $max_depth --data_normalize_median 1 \
     --num_resolution $resolution --multi_resolution_learnable_gradients_weights $multi_resolution_learnable_gradients_weights \
@@ -36,7 +36,7 @@ done
 
 for data_name in NYU_test_500 NYU_test_200 NYU_test_100 NYU_test_50 NYU_test_5
 do
-  python main.py \
+  uv run python main.py \
     --dir_data ../datasets/uniformat_release/"${data_name}" --val_data_name Uniformat \
     --max_depth $max_depth --data_normalize_median 1 \
     --num_resolution $resolution --multi_resolution_learnable_gradients_weights $multi_resolution_learnable_gradients_weights \

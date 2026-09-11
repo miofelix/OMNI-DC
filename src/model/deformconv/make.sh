@@ -1,1 +1,1 @@
-python setup.py build install 
+uv run python setup.py build install

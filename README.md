@@ -74,31 +74,22 @@ Virtual Depth Pattens (Avg on 4 datasets): RMSE/REL
 </details>
 
 ## Environment Setup
-We recommend creating a python enviroment with anaconda.
-```shell
-conda create -n OMNIDC python=3.8
-conda activate OMNIDC
-# For CUDA Version == 11.3
-conda install pytorch==1.10.1 torchvision==0.11.2 torchaudio==0.10.1 cudatoolkit=11.3 -c pytorch -c conda-forge
-pip install mmcv==1.4.4 -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10/index.html 
-pip install mmsegmentation==0.22.1 
-pip install timm tqdm thop tensorboardX tensorboard opencv-python ipdb h5py ipython Pillow==9.5.0 plyfile einops
-pip install huggingface_hub
-```
-
-#### NVIDIA Apex
-
-We used NVIDIA Apex for multi-GPU training. Apex can be installed as follows:
+Use the repository-level `uv` environment for model and evaluation commands.
 
 ```shell
-git clone https://github.com/NVIDIA/apex
-cd apex
-git reset --hard 4ef930c1c884fdca5f472ab2ce7cb9b505d26c1a
-conda install cudatoolkit-dev=11.3 -c conda-forge
-pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./ 
+uv sync --extra evaluation --group dev
+uv run python -m evaluation --help
 ```
 
-You may face the bug `ImportError: cannot import name 'container_abcs' from 'torch._six'`. In this case, change line 14 of apex/apex/_amp_state.py to `import collections.abc as container_abcs` and re-install apex.
+Server inference requires a CUDA-capable PyTorch runtime and the native OMNI-DC
+checkpoints described below. All Python commands in this repository are run
+through `uv`; the old conda/pip environment recipe has been removed.
+
+#### NVIDIA Apex (training only)
+
+The evaluation pipeline does not require Apex. If the legacy multi-GPU training
+workflow is used on a CUDA server, install its pinned source checkout inside the
+active uv environment with `uv pip install`.
 
 ## Checkpoints 
 
@@ -128,10 +119,10 @@ and put it under the `checkpoints` folder.
 Download the [Depth Anything checkpoint](https://huggingface.co/depth-anything/Depth-Anything-V2-Large/resolve/main/depth_anything_v2_vitl.pth?download=true) to `src/depth_models/depth_anything_v2/checkpoints`.
 
 ## Demo
-Run 
+Run from the `src` directory:
 ```
 cd src
-sh testing_script/demo.sh 
+uv run bash testing_scripts/demo.sh
 ```
 Note: Do NOT directly run `demo.py`. The model configs are different than default and can cause shape mismatch when loading the checkpoints.
 
