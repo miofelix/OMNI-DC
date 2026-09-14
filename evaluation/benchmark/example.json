@@ -1,0 +1,24 @@
+{
+  "protocol_version": "forward-benchmark-v1",
+  "project": "omni_dc",
+  "device": "cuda:0",
+  "input": {
+    "width": 640,
+    "height": 480,
+    "seed": 0,
+    "min_depth": 0.1,
+    "max_depth": 6.0,
+    "batch_size": 1,
+    "valid_ratio": 1.0
+  },
+  "timing": {
+    "warmup": 50,
+    "iterations": 200,
+    "repeats": 3
+  },
+  "model": {
+    "checkpoint": null,
+    "mde_checkpoint": null,
+    "resolution_level": 3
+  }
+}

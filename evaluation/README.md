@@ -210,3 +210,9 @@ normalization; `src/data/ibims.py` supplies identity K, and
 `src/model/convgru.py::BasicUpdateBlock.forward` currently accepts but does not
 use K. The adapter still forwards available calibration so that this interface
 remains intact. No CUDA checkpoint run was used to infer these contracts.
+
+## Native forward performance benchmark
+
+Independent parameter counting and CUDA forward FPS measurement are available through
+`python -m evaluation.benchmark`. See [the standalone benchmark guide](benchmark/README.md)
+for the fixed synthetic-input protocol, Mac checks, and the DGX Spark environment.

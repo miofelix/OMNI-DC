@@ -1,0 +1,14 @@
+# DGX Spark 原生 forward 基准环境。构建上下文为本仓库根目录。
+# 用法：bash evaluation/benchmark/build_spark.sh；只在 Linux ARM64 上构建/验证。
+ARG BASE_IMAGE=nvcr.io/nvidia/pytorch:25.11-py3
+FROM ${BASE_IMAGE}
+ENV PYTHONUNBUFFERED=1
+RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0t64 && rm -rf /var/lib/apt/lists/*
+RUN python -m venv --system-site-packages /opt/forward-venv
+ENV PATH="/opt/forward-venv/bin:$PATH"
+COPY evaluation/benchmark/spark-requirements.txt /tmp/spark-requirements.txt
+RUN python -c 'import importlib.metadata as m; print("torch==" + m.version("torch")); print("torchvision==" + m.version("torchvision"))' > /tmp/forward-core-constraints.txt
+RUN PIP_CONSTRAINT=/tmp/forward-core-constraints.txt python -m pip install -r /tmp/spark-requirements.txt
+COPY evaluation/benchmark/spark-entrypoint.sh /opt/forward-entrypoint.sh
+ENTRYPOINT ["bash", "/opt/forward-entrypoint.sh"]
+CMD ["python", "-m", "evaluation.benchmark", "--help"]

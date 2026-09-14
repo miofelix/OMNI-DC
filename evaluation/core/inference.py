@@ -143,7 +143,10 @@ def _state_dict(checkpoint):
     }
 
 
-def load_model(model_path: str, device: torch.device, config: RunConfig) -> torch.nn.Module:
+def load_model(
+    model_path: str, device: torch.device, config: RunConfig,
+    *, dav2_checkpoint: str | None = None,
+) -> torch.nn.Module:
     if str(SRC_DIR) not in sys.path:
         sys.path.insert(0, str(SRC_DIR))
     from model.ognidc import OGNIDC
@@ -153,6 +156,8 @@ def load_model(model_path: str, device: torch.device, config: RunConfig) -> torc
         raise FileNotFoundError(f"OMNI-DC checkpoint not found: {checkpoint_path}")
 
     model_args = _default_model_args(config)
+    if dav2_checkpoint is not None:
+        model_args.dav2_checkpoint_path = str(Path(dav2_checkpoint).expanduser().resolve())
     previous_cwd = Path.cwd()
     os.chdir(SRC_DIR)
     try:

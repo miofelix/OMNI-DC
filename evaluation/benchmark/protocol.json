@@ -1,0 +1,9 @@
+{
+  "protocol_version": "forward-benchmark-v1",
+  "sha256": {
+    "core": "0f145d920b4e09faaeb34ab2336e75c410d10dcb2f7709134a307da1d80ca1a2",
+    "parameters": "5b19f9b5ba54912c2e77efada4f670f7ae7c250e63d4710b82cbf1b3a411b3d9",
+    "support": "bfda4c812cc0d9b177df24ea92549e767d7dc4f2b62bb237acc995960e4fad86",
+    "cli": "938e724cecffec0c5a8e74b748d2cb088a4f8267646bf1db62be62dc361771eb"
+  }
+}

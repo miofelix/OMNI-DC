@@ -71,7 +71,8 @@ class OGNIDC(nn.Module, PyTorchModelHubMixin):
 
             self.depth_module = DepthAnythingV2(**dav2_model_configs[encoder])
             self.depth_module.load_state_dict(
-                torch_load_compatible(f'./depth_models/depth_anything_v2/checkpoints/depth_anything_v2_{encoder}.pth',
+                torch_load_compatible(getattr(self.args, 'dav2_checkpoint_path',
+                                      f'./depth_models/depth_anything_v2/checkpoints/depth_anything_v2_{encoder}.pth'),
                                       map_location='cpu'))
             self.depth_module = self.depth_module.eval()
 
